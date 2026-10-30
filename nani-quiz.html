@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c0b">
+<title>测你是几级纳尼体质</title>
+<style>
+  :root{
+    --bg:#0a0c0b;
+    --bg2:#141a17;
+    --card:#111715;
+    --ink:#e8f2ea;
+    --ink2:#b9cec2;
+    --muted:#7e9186;
+    --rule:#26332d;
+    --neon:#b6ff3c;
+    --mag:#ff2e88;
+    --cyan:#3cf2ff;
+    --tb:#2b3a33;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:16px; line-height:1.75; -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:contain;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(560px 460px at 86% -10%, rgba(182,255,60,.10), transparent 62%),
+      radial-gradient(620px 520px at -12% 42%, rgba(255,46,136,.09), transparent 64%),
+      radial-gradient(700px 620px at 52% 114%, rgba(60,242,255,.07), transparent 62%);
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px);
+    opacity:.7;
+  }
+  [hidden]{display:none !important}
+  button{font-family:inherit; font-size:inherit; color:inherit; border:none; background:none; cursor:pointer; touch-action:manipulation}
+  .app{max-width:520px; margin:0 auto; position:relative; z-index:1; min-height:100vh; min-height:100svh}
+  .screen{min-height:100vh; min-height:100svh; display:flex; flex-direction:column}
+  .mono{font-family:"SFMono-Regular","Menlo","Consolas","Courier New",monospace}
+
+  /* ---------- 封面 ---------- */
+  #s-cover{padding:calc(30px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom))}
+  #s-cover>div{
+    display:flex; flex-direction:column; flex:1; min-height:0;
+    border:1px solid var(--tb); padding:26px 20px 22px; position:relative;
+    background:linear-gradient(180deg, rgba(17,23,21,.92), rgba(10,12,11,.96));
+    box-shadow:0 0 0 1px rgba(182,255,60,.10), 0 24px 60px rgba(0,0,0,.6);
+  }
+  #s-cover>div::before{
+    content:""; position:absolute; top:-1px; left:-1px; width:34px; height:34px;
+    border-top:2px solid var(--neon); border-left:2px solid var(--neon);
+  }
+  #s-cover>div::after{
+    content:""; position:absolute; bottom:-1px; right:-1px; width:34px; height:34px;
+    border-bottom:2px solid var(--mag); border-right:2px solid var(--mag);
+  }
+  .kicker{font-size:10px; letter-spacing:.3em; color:var(--neon); font-weight:700}
+  .cover-mid{flex:1; display:flex; flex-direction:column; justify-content:center; padding:22px 0}
+  .cover-title{
+    font-size:clamp(36px, 11.5vw, 50px); line-height:1.1; font-weight:900; letter-spacing:-1.5px;
+    margin:18px 0 14px; color:var(--ink);
+    text-shadow:2px 0 var(--mag), -2px 0 var(--cyan);
+    animation:jitter 4s steps(1) infinite;
+  }
+  @keyframes jitter{
+    0%,92%,100%{transform:translate(0,0)}
+    93%{transform:translate(-2px,1px)}
+    95%{transform:translate(2px,-1px)}
+    97%{transform:translate(-1px,-1px)}
+  }
+  .cover-sub{font-size:15px; color:var(--neon); font-weight:700; margin:0 0 16px; letter-spacing:.06em}
+  .cover-desc{font-size:14px; color:var(--muted); margin:0 0 22px; line-height:1.9; padding-left:14px; border-left:2px solid var(--mag)}
+  .facts{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px}
+  .fact{
+    border:1px solid var(--rule); padding:5px 12px; font-size:11.5px; color:var(--ink2);
+    background:rgba(43,58,51,.4);
+  }
+  .fact b{color:var(--neon); font-weight:700}
+  .btn{display:flex; align-items:center; justify-content:center; width:100%; min-height:58px; font-size:15.5px; font-weight:800; letter-spacing:.14em; transition:transform .1s ease, box-shadow .2s ease}
+  .btn:active{transform:translate(2px,2px)}
+  .btn-primary{
+    background:var(--neon); color:#0a0c0b;
+    box-shadow:4px 4px 0 var(--mag);
+  }
+  .btn-primary:active{box-shadow:1px 1px 0 var(--mag)}
+  .cover-note{font-size:11px; color:var(--muted); text-align:center; margin:14px 0 0; line-height:1.9; letter-spacing:.02em}
+  .deco{position:absolute; pointer-events:none; user-select:none; font-size:12px; letter-spacing:.16em; color:var(--neon); opacity:.45}
+  .deco-1{top:calc(46px + env(safe-area-inset-top)); right:-4px; transform:rotate(90deg); transform-origin:right top}
+  .deco-2{bottom:150px; left:8px; color:var(--mag); opacity:.35}
+  .deco-3{top:210px; right:10px; color:var(--cyan); opacity:.3; font-size:10px}
+  .deco-4{bottom:70px; right:14px; opacity:.3}
+
+  /* ---------- 答题 ---------- */
+  .qbar{
+    position:sticky; top:0; z-index:5;
+    background:rgba(10,12,11,.94); backdrop-filter:blur(10px);
+    padding:calc(13px + env(safe-area-inset-top)) 18px 11px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qbar-row{display:flex; align-items:center; gap:12px}
+  .iconbtn{
+    width:36px; height:36px; border:1px solid var(--tb); background:var(--bg2);
+    color:var(--neon); display:flex; align-items:center; justify-content:center;
+    font-size:17px; font-weight:700;
+  }
+  .iconbtn:disabled{opacity:.28}
+  .qmeta{flex:1}
+  .qcount{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); margin-bottom:7px; letter-spacing:.1em}
+  .qcount b{color:var(--neon); font-weight:700}
+  .pbar{height:6px; background:var(--bg2); border:1px solid var(--rule); overflow:hidden}
+  .pbar i{
+    display:block; height:100%; width:0;
+    background:linear-gradient(90deg, var(--cyan), var(--neon) 55%, var(--mag));
+    transition:width .3s steps(8,end);
+  }
+  .qbody{flex:1; padding:30px 22px calc(30px + env(safe-area-inset-bottom)); display:flex; flex-direction:column}
+  .qno{font-size:10px; letter-spacing:.26em; color:var(--mag); font-weight:700; margin-bottom:12px}
+  .qno::before{content:"[ "; color:var(--muted)}
+  .qno::after{content:" ]"; color:var(--muted)}
+  .qtext{font-size:20.5px; line-height:1.55; font-weight:800; letter-spacing:-.2px; margin:0 0 8px; color:var(--ink)}
+  .hint{font-size:11.5px; color:var(--muted); margin:0 0 24px}
+  .opts{display:flex; flex-direction:column; gap:10px}
+  .opt{
+    background:var(--card); border:1px solid var(--rule); padding:16px 17px;
+    text-align:left; font-size:14.5px; line-height:1.7; min-height:60px; display:flex; align-items:center;
+    transition:border-color .14s, background .14s, transform .1s;
+    box-shadow:3px 3px 0 rgba(43,58,51,.5);
+  }
+  .opt:active{transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(43,58,51,.5)}
+  .opt.on{
+    border-color:var(--neon); background:rgba(182,255,60,.06);
+    box-shadow:3px 3px 0 var(--mag);
+  }
+  .opt .dot{
+    width:16px; height:16px; margin-right:13px; flex:none; background:var(--tb);
+    clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+    transition:background .14s;
+  }
+  .opt.on .dot{background:var(--neon)}
+  .qfoot{margin-top:auto; padding-top:22px; font-size:11px; color:var(--muted); letter-spacing:.03em}
+
+  /* ---------- 加载 ---------- */
+  #loading{position:fixed; inset:0; background:var(--bg); z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px}
+  .spinner{
+    font-size:34px; font-weight:900; color:var(--neon);
+    text-shadow:2px 0 var(--mag), -2px 0 var(--cyan);
+    animation:jitter .9s steps(1) infinite;
+  }
+  #loading p{font-size:12px; color:var(--muted); letter-spacing:.2em}
+
+  /* ---------- 结果 ---------- */
+  #s-result{padding:calc(26px + env(safe-area-inset-top)) 20px calc(26px + env(safe-area-inset-bottom))}
+  .r-kicker{font-size:10px; letter-spacing:.28em; color:var(--neon); text-align:center; margin-bottom:14px}
+  .r-hero{
+    border:1px solid var(--tb); padding:28px 20px 24px; text-align:center; position:relative;
+    background:linear-gradient(180deg, rgba(17,23,21,.94), rgba(10,12,11,.97));
+    box-shadow:0 0 0 1px rgba(182,255,60,.10), 0 22px 54px rgba(0,0,0,.55);
+  }
+  .r-hero::before{
+    content:""; position:absolute; top:-1px; left:-1px; width:26px; height:26px;
+    border-top:2px solid var(--mag); border-left:2px solid var(--mag);
+  }
+  .r-hero::after{
+    content:""; position:absolute; bottom:-1px; right:-1px; width:26px; height:26px;
+    border-bottom:2px solid var(--cyan); border-right:2px solid var(--cyan);
+  }
+  .r-emoji{font-size:40px; line-height:1; margin-bottom:6px}
+  .r-grade{
+    font-size:clamp(30px, 9vw, 40px); font-weight:900; letter-spacing:-1px; line-height:1.1;
+    color:var(--neon); text-shadow:2px 0 var(--mag), -2px 0 var(--cyan);
+    margin:0 0 6px;
+  }
+  .r-type{font-size:18px; font-weight:800; color:var(--ink); margin:0 0 4px}
+  .r-tagline{font-size:12.5px; color:var(--muted); margin:0 0 20px}
+  .r-score{display:flex; justify-content:center; gap:8px; border-top:1px solid var(--rule); padding-top:16px}
+  .r-score div{flex:1; border-left:1px solid var(--rule); padding-left:10px; text-align:left}
+  .r-score div:first-child{border-left:none; padding-left:0}
+  .r-score b{display:block; font-size:22px; color:var(--ink); font-weight:800; line-height:1.3}
+  .r-score b.big{font-size:28px; color:var(--neon)}
+  .r-score span{font-size:10px; color:var(--muted); letter-spacing:.06em}
+  .r-block{
+    margin-top:12px; border:1px solid var(--rule); padding:17px; background:rgba(17,23,21,.7);
+  }
+  .r-block h3{
+    margin:0 0 9px; font-size:10px; letter-spacing:.22em; color:var(--neon); font-weight:700;
+  }
+  .r-block h3::before{content:"// "; color:var(--mag)}
+  .r-block p{margin:0; font-size:14px; line-height:1.95; color:var(--ink2)}
+  .r-quote{font-size:15px; font-weight:700; color:var(--ink)}
+  .r-list{margin:0; padding:0; list-style:none}
+  .r-list li{font-size:14px; line-height:1.8; color:var(--ink2); padding-left:18px; position:relative; margin-bottom:8px}
+  .r-list li::before{content:"›"; position:absolute; left:3px; color:var(--neon); font-weight:700}
+  .r-warn{border-color:var(--tb); background:rgba(255,46,136,.04)}
+  .r-warn h3{color:var(--mag)}
+  .r-warn p{color:var(--muted); font-size:12.5px}
+  .r-actions{margin-top:18px; display:flex; flex-direction:column; gap:10px}
+  .btn-ghost{border:1px solid var(--tb); color:var(--ink2); background:var(--bg2); box-shadow:3px 3px 0 rgba(43,58,51,.55)}
+  .btn-ghost:active{box-shadow:1px 1px 0 rgba(43,58,51,.55)}
+  .r-foot{margin-top:16px; text-align:center; font-size:11px; color:var(--muted); line-height:1.9}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 封面 -->
+  <section id="s-cover" class="screen">
+    <div>
+      <div class="kicker mono">SYSTEM.LOG / NANI.CONSTITUTION</div>
+      <div class="cover-mid">
+        <h1 class="cover-title">你是几级<br>纳尼体质</h1>
+        <p class="cover-sub">微微一纳，很尼尼。</p>
+        <p class="cover-desc">18 道题，从被惊到的频率、反应延迟、装傻掩饰、坦荡不懂四个层面，给你的纳尼体质定级。一共五级，从免疫体到纳尼本体。</p>
+        <div class="facts">
+          <span class="fact"><b>18</b> 题</span>
+          <span class="fact"><b>5</b> 级分级</span>
+          <span class="fact">约 <b>3</b> 分钟</span>
+        </div>
+        <button class="btn btn-primary" id="btn-start">开始扫描</button>
+        <p class="cover-note">娱乐向内容 · 纳尼不是笨，是你在认真处理信息<br>反应慢的人，往往想得比别人多一层</p>
+      </div>
+      <span class="deco deco-1 mono">NANI??</span>
+      <span class="deco deco-2 mono">纳尼</span>
+      <span class="deco deco-3 mono">WHAT</span>
+      <span class="deco deco-4 mono">??</span>
+    </div>
+  </section>
+
+  <!-- 答题 -->
+  <section id="s-quiz" class="screen" hidden>
+    <div class="qbar">
+      <div class="qbar-row">
+        <button class="iconbtn" id="btn-prev" aria-label="上一题">‹</button>
+        <div class="qmeta">
+          <div class="qcount"><b id="qno">第 1 题</b><span id="qtotal">/ 18 题</span></div>
+          <div class="pbar"><i id="pfill"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="qbody">
+      <div class="qno mono" id="qdim">SHOCK</div>
+      <h2 class="qtext" id="qtext"></h2>
+      <p class="hint" id="qhint"></p>
+      <div class="opts" id="qopts"></div>
+      <div class="qfoot">选你真实的反应，不是你以为自己该有的反应</div>
+    </div>
+  </section>
+
+  <!-- 结果 -->
+  <section id="s-result" class="screen" hidden>
+    <div class="r-kicker mono">SCAN COMPLETE</div>
+    <div class="r-hero">
+      <div class="r-emoji" id="r-emoji"></div>
+      <div class="r-grade" id="r-grade"></div>
+      <div class="r-type" id="r-type"></div>
+      <p class="r-tagline" id="r-tagline"></p>
+      <div class="r-score">
+        <div><b class="big" id="r-index">0</b><span>纳尼指数</span></div>
+        <div><b id="r-signal">0</b><span>纳尼强度</span></div>
+        <div><b id="r-base">0</b><span>自认度</span></div>
+      </div>
+    </div>
+    <div class="r-block"><h3>判词</h3><p class="r-quote" id="r-quote"></p></div>
+    <div class="r-block"><h3>等级解读</h3><p id="r-decoding"></p></div>
+    <div class="r-block"><h3>类型解读</h3><p id="r-style"></p></div>
+    <div class="r-block"><h3>一句实话</h3><p id="r-truth"></p></div>
+    <div class="r-block"><h3>纳尼应对手册</h3><ul class="r-list" id="r-todo"></ul></div>
+    <div class="r-block r-warn"><h3>提醒</h3><p>纳尼体质不是智商评级，也不是缺点。反应慢半拍的人，常常是因为在处理更多信息；坦荡承认不懂的人，往往学得最快。这份报告仅供娱乐，别拿它给自己的任何一次困惑下判决。</p></div>
+    <div class="r-actions">
+      <button class="btn btn-primary" id="btn-share">生成分享文案</button>
+      <button class="btn btn-ghost" id="btn-quick">1 分钟速测 · 拉朋友对级</button>
+      <button class="btn btn-ghost" id="btn-restart">重新扫描</button>
+    </div>
+    <div class="r-foot">测你是几级纳尼体质<br>娱乐向内容 · 微微一纳</div>
+  </section>
+
+  <!-- 加载 -->
+  <div id="loading" hidden>
+    <div class="spinner">纳尼</div>
+    <p>正在解析你的纳尼反应…</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CONFIG = {
+    total: 18,
+    quickUrl: "nani-quiz-8.html"
+  };
+
+  // 维度：shock 被惊到 / delay 延迟理解 / mask 装傻掩饰 / honest 坦荡不懂
+  var DIMS = {
+    shock:{name:"被惊到"},
+    delay:{name:"延迟理解"},
+    mask:{name:"装傻掩饰"},
+    honest:{name:"坦荡不懂"}
+  };
+
+  // 前 12 题测纳尼强度（4 维 × 3 题），后 6 题测自认度（axis:"b"）
+  var QUESTIONS = [
+    {dim:"shock", hint:"已读不回，是最强的悬念装置。",
+     text:"朋友发来一句我有个事跟你说，然后就消失了四十分钟。",
+     opts:[
+       {t:"我脑内已经演完了十种剧情，全是坏的那种", s:2},
+       {t:"会等着，但心里有点慌", s:1},
+       {t:"忘了，他忙完自然会发", s:0}]},
+    {dim:"shock", hint:"袋子里的空白，会说话。",
+     text:"你打开外卖，发现少了一份。",
+     opts:[
+       {t:"我会对着袋子愣三秒，反复确认是不是自己记错了", s:2},
+       {t:"会再看一眼订单截图，确认一下", s:1},
+       {t:"直接联系商家，没什么好愣的", s:0}]},
+    {dim:"shock", hint:"认知边界被撞了一下。",
+     text:"有人告诉你一件完全超出你认知范围的事。",
+     opts:[
+       {t:"我第一反应是：等等，你说什么", s:2},
+       {t:"我会先点头，然后回去自己查", s:1},
+       {t:"我会立刻追问细节，觉得很有意思", s:0}]},
+    {dim:"delay", hint:"笑点来得比别人晚两秒。",
+     text:"有人讲了个笑话，全场都笑了。",
+     opts:[
+       {t:"我跟着笑了，过了两秒才反应过来哪里好笑", s:2},
+       {t:"笑是笑了，但没太懂", s:1},
+       {t:"立刻懂了，还接了一句更好笑的", s:0}]},
+    {dim:"delay", hint:"有些话要回家才听懂。",
+     text:"有人当面批评了你一句。",
+     opts:[
+       {t:"当时没什么感觉，晚上回家突然反应过来他是什么意思", s:2},
+       {t:"当场有点不服，后来想想确实有道理", s:1},
+       {t:"当场就听出弦外之音了", s:0}]},
+    {dim:"delay", hint:"剧情早就铺好了，你才刚接上。",
+     text:"一部电影看到一半，你才发现剧情和你以为的完全不一样。",
+     opts:[
+       {t:"我得倒回去重看一段，才能接上", s:2},
+       {t:"会愣一下，然后继续看", s:1},
+       {t:"早就察觉铺垫了", s:0}]},
+    {dim:"mask", hint:"点头不等于听懂。",
+     text:"领导说的要求你没太听懂。",
+     opts:[
+       {t:"我先点头，回去自己琢磨", s:2},
+       {t:"会问一个不太关键的问题，掩饰一下", s:1},
+       {t:"我会直接说没听懂，麻烦再说一遍", s:0}]},
+    {dim:"mask", hint:"表情包是最好的掩护。",
+     text:"群里有人艾特你，讲了一个你完全不熟的梗。",
+     opts:[
+       {t:"我发个笑哭表情，先把场面撑住", s:2},
+       {t:"我悄悄去搜一下这是什么意思", s:1},
+       {t:"我直接问，这什么梗", s:0}]},
+    {dim:"mask", hint:"最安全的一句话，是万能敷衍。",
+     text:"有人跟你讲一件事，你没听懂但必须回应。",
+     opts:[
+       {t:"我会说：啊，这样啊（其实什么都没接收到）", s:2},
+       {t:"我会挑一个我能接的词回应一下", s:1},
+       {t:"我会说：你再说一遍，我刚没跟上", s:0}]},
+    {dim:"honest", hint:"不认识就问，是一种能力。",
+     text:"别人用了一个你完全不认识的词。",
+     opts:[
+       {t:"我会当场问，那是什么意思", s:2},
+       {t:"先假装知道，回去偷偷查", s:1},
+       {t:"我会根据上下文猜，一般不问", s:0}]},
+    {dim:"honest", hint:"举手不丢人，装懂才累。",
+     text:"开会时你完全不知道大家在说什么。",
+     opts:[
+       {t:"我会举手说，这块我不太清楚", s:2},
+       {t:"我会先记下来，会后找人问", s:1},
+       {t:"我会假装在记笔记，全程沉默", s:0}]},
+    {dim:"honest", hint:"被问住的那一刻，最见人。",
+     text:"有人对你说：这你都不知道？",
+     opts:[
+       {t:"是啊，我确实不知道，你讲讲", s:2},
+       {t:"会有点尴尬，但也不否认", s:1},
+       {t:"我会立刻说我知道，其实并不确定", s:0}]},
+    {axis:"b", hint:"最后一组，关于你怎么看自己。",
+     text:"朋友说你反应总是慢半拍。",
+     opts:[
+       {t:"我承认，我确实经常慢半拍", s:2},
+       {t:"看情况，有时候是装的", s:1},
+       {t:"我不觉得，我只是不说话", s:0}]},
+    {axis:"b", hint:"统计一下，一天几次。",
+     text:"你会不会经常在心里默默说一句：纳尼？",
+     opts:[
+       {t:"一天好几次，几乎已经是口头禅了", s:2},
+       {t:"偶尔，遇到特别离谱的事才会", s:1},
+       {t:"很少，我基本能理解发生的一切", s:0}]},
+    {axis:"b", hint:"看起来懵，和真的懵，是两回事。",
+     text:"有人说你看起来很懵。",
+     opts:[
+       {t:"因为我确实很懵，这没什么好藏的", s:2},
+       {t:"我表面懵，心里其实在想别的", s:1},
+       {t:"我不懵，我只是表情比较淡", s:0}]},
+    {axis:"b", hint:"一个很诚实的问题。",
+     text:"你觉得自己对这个世界理解了几成？",
+     opts:[
+       {t:"大概三成，剩下七成我都在纳尼", s:2},
+       {t:"一半一半吧", s:1},
+       {t:"我觉得我基本都懂", s:0}]},
+    {axis:"b", hint:"形容词，暴露了你在乎什么。",
+     text:"你更愿意被形容为？",
+     opts:[
+       {t:"有点呆", s:2},
+       {t:"有点慢", s:1},
+       {t:"有点酷", s:0}]},
+    {axis:"b", hint:"最后一题。选一个称号。",
+     text:"如果必须给你一个称号，你选？",
+     opts:[
+       {t:"纳尼本体，万物皆可纳尼", s:2},
+       {t:"微微一纳", s:1},
+       {t:"我不配，我很清醒", s:0}]}
+  ];
+
+  // 等级（按纳尼指数划分）
+  var GRADES = [
+    {min:81, name:"五级", title:"纳尼本体", emoji:"🌀",
+     tagline:"万物皆可纳尼，你就是那个问号本身。",
+     quote:"别人在生活，你在不断地问：等等，什么？",
+     decoding:"你的纳尼反应几乎覆盖了所有场景：被惊到、反应延迟、装傻掩饰、坦荡不懂，四项都很高。这不是理解力的问题，是你的信息处理方式比较特殊——你会把每一条新信息都当成需要重新校准世界的信号，于是经常停顿、经常愣住、经常在心里冒出一个问号。这种人往往看事情比谁都细，只是反应排在后面。",
+     truth:"你最大的风险是：太多纳尼，会让身边的人误以为你不在意，或者误以为你没听懂。其实你只是还在处理。学会说一句我在想，比硬撑着一个表情有用得多。"},
+    {min:61, name:"四级", title:"重度纳尼", emoji:"🤯",
+     tagline:"一天至少三次，稳稳的重度用户。",
+     quote:"你的日常，是由一连串小小的愣住组成的。",
+     decoding:"纳尼强度明显偏高：你会因为一条消息脑补十种剧情，会因为一句批评回家才反应过来，会因为没听懂而先点头。你对世界保持着很高的惊讶密度，这让你显得有点慢，但也让你不容易麻木。",
+     truth:"惊讶密度高不是坏事，但它会消耗你。试着把一部分纳尼留在心里，不必每一次都真的停下来处理——有些事，过两天就自己清楚了。"},
+    {min:41, name:"三级", title:"标准纳尼", emoji:"❓",
+     tagline:"普通人里比较诚实的那种。",
+     quote:"你会纳尼，但你也会问。这是很健康的配置。",
+     decoding:"你的四项都在中等偏上，没有哪一项特别突出。遇到不懂的会愣一下，偶尔装个傻，关键时刻也敢问。这种配置其实是最省力的：既保留了惊讶的能力，也没有被惊讶困住。",
+     truth:"你唯一需要注意的是别在关键时刻选择装懂。三级的人最容易在会议上点头，然后在会后懊悔。多问一句，成本远低于返工。"},
+    {min:21, name:"二级", title:"微微一纳", emoji:"😌",
+     tagline:"微微一纳，很尼尼。",
+     quote:"你大部分时候都跟得上，只在少数时刻轻轻顿一下。",
+     decoding:"纳尼强度偏低：信息来了你基本能接住，偶尔有延迟，偶尔有装傻，但都不严重。你给人的感觉是稳，不会让人担心你没听懂，也不会让人觉得你太较真。",
+     truth:"这份稳定有时候会变成一种代价：你太习惯接住一切，别人就默认你什么都能接。适当的纳尼，其实是一种边界。"},
+    {min:0, name:"一级", title:"纳尼免疫体", emoji:"🧊",
+     tagline:"你几乎不纳尼，世界在你眼里基本讲得通。",
+     quote:"别人还在问什么，你已经在做下一步了。",
+     decoding:"四个维度的分数都很低：很少被惊到，反应快，不装傻，也不需要坦荡认错，因为你基本都懂。你在信息处理上非常高效，几乎不给困惑留空间。",
+     truth:"唯一的隐患是：太快理解，有时候会让你跳过一些本该被认真对待的东西。不是所有事都能一句话解释完，偶尔停下来纳尼一下，可能会看见更多。"}
+  ];
+
+  // 类型（按四个维度的相对高分决定）
+  var STYLES = {
+    shock:{
+      name:"懵圈型", emoji:"🤨",
+      desc:"你的纳尼主要发生在被惊到的那一刻。信息一超载，大脑就会短暂宕机，脸上先出现一个问号，然后才开始处理。你不是不理解，你是需要一点时间把新的信息装进原来的框架里。这种人通常观察力很好，因为你在停顿的那几秒里，其实看到了别人忽略的细节。",
+      tips:["愣住的时候，直接说一句我在消化，比硬撑表情好","把让你纳尼的事记下来，一周后回看，大部分会自己解开","别在宕机的那三秒里做任何决定"]
+    },
+    delay:{
+      name:"延迟型", emoji:"🐢",
+      desc:"你的纳尼发生在事后。当场你反应正常，甚至还能笑着接话，但真正的理解要等到回家、洗澡、或者半夜躺下的时候才突然到达。这种延迟不是迟钝，是你的大脑在做后台运算——它会把你当时没来得及处理的信息，重新跑一遍。",
+      tips:["重要的对话，事后补一条消息确认理解对不对","给自己留出消化的时间，别逼自己当场表态","延迟到达的顿悟，值得记下来"]
+    },
+    mask:{
+      name:"装傻型", emoji:"🎭",
+      desc:"你的纳尼很多时候是表演出来的。你其实懂，但你需要时间，或者你不想暴露自己不懂，于是先点头、先发表情、先说一句啊这样啊。你很擅长维持场面，代价是你经常在事后独自补课。这种能力在社交里非常有用，但它会让你比别人多花一倍的力气。",
+      tips:["试一次不装懂，直接说我没太跟上","把点完头之后的真实困惑记下来，找机会问清楚","场面撑住了，问题还在，记得回来解决"]
+    },
+    honest:{
+      name:"真诚型", emoji:"🌊",
+      desc:"你的纳尼非常坦荡：不懂就问，不知道就说不知道。这种人在很多场合会显得有点吃亏，但长期来看是进步最快的——因为你从不在错误的认知上叠加更多错误。你的问号不是弱点，是你最快获取答案的方式。",
+      tips:["保持这个习惯，但注意提问的时机和对象","把问过的问题整理成自己的知识库","不是所有人都值得你坦荡，学会分辨"]
+    }
+  };
+
+  // ---------- 状态 ----------
+  var idx = 0;
+  var answers = new Array(CONFIG.total).fill(null);
+
+  var $ = function(id){ return document.getElementById(id); };
+  var coverEl = $("s-cover"), quizEl = $("s-quiz"), resultEl = $("s-result"), loadingEl = $("loading");
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function renderQ(){
+    var q = QUESTIONS[idx];
+    var dimName = q.dim ? DIMS[q.dim].name : "自认度";
+    $("qdim").textContent = (q.dim ? "SCAN · " : "SELF · ") + dimName;
+    $("qno").textContent = "第 " + (idx+1) + " 题";
+    $("qtotal").textContent = "/ " + CONFIG.total + " 题";
+    $("pfill").style.width = (idx / CONFIG.total * 100) + "%";
+    $("qtext").textContent = q.text;
+    $("qhint").textContent = q.hint;
+    $("btn-prev").disabled = (idx === 0);
+
+    var box = $("qopts");
+    box.innerHTML = "";
+    var opts = shuffle(q.opts);
+    opts.forEach(function(o){
+      var b = document.createElement("button");
+      b.className = "opt" + (answers[idx] === o.s ? " on" : "");
+      b.innerHTML = '<span class="dot"></span><span>' + o.t + '</span>';
+      b.onclick = function(){
+        answers[idx] = o.s;
+        var all = box.querySelectorAll(".opt");
+        for(var k=0;k<all.length;k++) all[k].classList.remove("on");
+        b.classList.add("on");
+        setTimeout(function(){
+          if(idx < CONFIG.total-1){ idx++; renderQ(); window.scrollTo(0,0); }
+          else{ finish(); }
+        }, 250);
+      };
+      box.appendChild(b);
+    });
+  }
+
+  function calc(){
+    var coreRaw = 0, selfRaw = 0, i;
+    for(i=0;i<12;i++) coreRaw += answers[i];
+    for(i=12;i<18;i++) selfRaw += answers[i];
+    var core = Math.round(coreRaw / 24 * 100);
+    var self = Math.round(selfRaw / 12 * 100);
+    var index = Math.round(core * 0.65 + self * 0.35);
+
+    // 各维度得分（前 12 题：每维连续 3 题）
+    var dims = {shock:0, delay:0, mask:0, honest:0};
+    var keys = ["shock","delay","mask","honest"];
+    for(var d=0; d<4; d++){
+      var sum = 0;
+      for(var j=0;j<3;j++) sum += answers[d*3+j];
+      dims[keys[d]] = sum;
+    }
+    var best = "shock";
+    for(var m=0;m<4;m++){ if(dims[keys[m]] > dims[best]) best = keys[m]; }
+
+    var grade = GRADES[GRADES.length-1];
+    for(var g=0; g<GRADES.length; g++){
+      if(index >= GRADES[g].min){ grade = GRADES[g]; break; }
+    }
+    return {core:core, self:self, index:index, grade:grade, style:best};
+  }
+
+  function renderResult(){
+    var r = calc();
+    var g = r.grade, st = STYLES[r.style];
+    $("r-emoji").textContent = g.emoji;
+    $("r-grade").textContent = g.name;
+    $("r-type").textContent = g.title + " · " + st.name;
+    $("r-tagline").textContent = g.tagline;
+    $("r-index").textContent = r.index;
+    $("r-signal").textContent = r.core;
+    $("r-base").textContent = r.self;
+    $("r-quote").textContent = g.quote;
+    $("r-decoding").textContent = g.decoding;
+    $("r-style").textContent = st.desc;
+    $("r-truth").textContent = g.truth;
+    var ul = $("r-todo");
+    ul.innerHTML = "";
+    st.tips.forEach(function(x){
+      var li = document.createElement("li");
+      li.textContent = x;
+      ul.appendChild(li);
+    });
+  }
+
+  function finish(){
+    loadingEl.hidden = false;
+    setTimeout(function(){
+      loadingEl.hidden = true;
+      quizEl.hidden = true;
+      renderResult();
+      resultEl.hidden = false;
+      window.scrollTo(0,0);
+    }, 1500);
+  }
+
+  $("btn-start").onclick = function(){
+    coverEl.hidden = true;
+    quizEl.hidden = false;
+    idx = 0;
+    answers = new Array(CONFIG.total).fill(null);
+    renderQ();
+    window.scrollTo(0,0);
+  };
+
+  $("btn-prev").onclick = function(){
+    if(idx > 0){ idx--; renderQ(); window.scrollTo(0,0); }
+  };
+
+  $("btn-restart").onclick = function(){
+    resultEl.hidden = true;
+    coverEl.hidden = false;
+    window.scrollTo(0,0);
+  };
+
+  $("btn-quick").onclick = function(){
+    location.href = CONFIG.quickUrl;
+  };
+
+  $("btn-share").onclick = function(){
+    var r = calc();
+    var g = r.grade, st = STYLES[r.style];
+    var text = "「测你是几级纳尼体质」我的扫描结果：" + g.emoji + " " + g.name + " " + g.title + " · " + st.name + "，纳尼指数 " + r.index + "/100。来对一下级 → " + location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        $("btn-share").textContent = "已复制，去粘贴吧";
+        setTimeout(function(){ $("btn-share").textContent = "生成分享文案"; }, 1600);
+      }, function(){
+        prompt("复制这段分享文案：", text);
+      });
+    }else{
+      prompt("复制这段分享文案：", text);
+    }
+  };
+})();
+</script>
+</body>
+</html>
